@@ -2,8 +2,6 @@ package ex2;
 
 import java.util.Random;
 
-import static java.lang.Thread.sleep;
-
 class InvalidAccount extends Exception {}
 class NotEnoughFunds extends Exception {}
 
@@ -12,13 +10,13 @@ public class Bank {
     private static class Account {
         int balance = 0;
 
-        public int balance() {
+        public synchronized int balance() {
             return this.balance;
         }
-        public void deposit(int val) {
+        public synchronized void deposit(int val) {
             this.balance += val;
         }
-        public void withdraw(int val) throws NotEnoughFunds {
+        public synchronized void withdraw(int val) throws NotEnoughFunds {
             if(balance < val){
                 throw new NotEnoughFunds();
             }
@@ -35,14 +33,14 @@ public class Bank {
         }
     }
 
-    public synchronized int balance(int id) throws InvalidAccount{
+    public int balance(int id) throws InvalidAccount{
         if(id <0 || id >= acs.length){
             throw new InvalidAccount();
         }
         return acs[id].balance();
     }
 
-    public synchronized void deposit(int id, int val) throws InvalidAccount{
+    public void deposit(int id, int val) throws InvalidAccount{
         if(id <0 || id >= acs.length){
             throw new InvalidAccount();
         }
@@ -54,12 +52,11 @@ public class Bank {
             throw new InvalidAccount();
         }
         Account c = acs[id];
-        synchronized (this) {
-            c.withdraw(val);
-        }
+        c.withdraw(val);
+
     }
 
-    public synchronized int totalBalance(int[] accounts) throws InvalidAccount{
+    public int totalBalance(int[] accounts) throws InvalidAccount{
         int total = 0;
         for(int id : accounts){
             total += balance(id);
@@ -97,7 +94,7 @@ class Main{
                     b.transfer(from, to, 10);
                     int total = b.totalBalance(ids);
                     System.out.println("Thread 1: " + total + " from: " + from + " to: " + to);
-                    sleep(1000);
+                    //sleep(1000);
 
                 }
             } catch(Exception ignored){}
@@ -109,7 +106,7 @@ class Main{
                 while(true){
                     int total = b.totalBalance(ids);
                     System.out.println("Thread 2: " + total);
-                    sleep(1000);
+                    //sleep(1000);
                     //if(total != n_contas*1000) System.out.println("Balanço total errado: " + total);
                 }
             } catch(Exception ignored){}
